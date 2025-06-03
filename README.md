@@ -4,8 +4,9 @@
 
 Nama | NRP
 --- | ---
-Amoes Noland | 5027231028
-Rafi' Afnaan Fathurrahman | 5027231040
+Nabilah Anindya Paramesti | 5027241006
+Balqis Sani Sabillah | 5027231002
+Muhammad Khairul Yahya | 5027241092
 
 ## Daftar Isi
 
