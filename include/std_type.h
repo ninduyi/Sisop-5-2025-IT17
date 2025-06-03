@@ -2,8 +2,9 @@
 #define __STD_TYPE_H__
 
 typedef unsigned char byte;
-typedef int bool;
+
+typedef char bool;
 #define true 1
 #define false 0
 
-#endif // __STD_YPE_H__
+#endif // __STD_TYPE_H__

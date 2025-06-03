@@ -1,180 +1,159 @@
 #include "shell.h"
 #include "kernel.h"
-#include "std_lib.h"
+#include "std_lib.h" // Diperlukan untuk strcmp dan strcpy
 
-char username[50] = "user";
-char grandcompany[50] = "";
-byte color = 0x0F;
-int cursor_pos = 0;
+static char current_username[33] = "user";
+static char current_gc_title[10] = ""; // Untuk menyimpan "@Storm", "@Serpent", dll.
 
-/* Moved from inside shell() */
-char *phrases[] = {"yo", "ts unami gng </3", "sygau"};
+// Array untuk respons Gurt (dari fitur sebelumnya)
+char* gurt_responses[] = {
+    "yo\n",
+    "ts unami gng </3\n",
+    "sygau\n"
+};
+int num_gurt_responses = 3;
 
-void scrollScreen() {
-  int i;
-  /* Copy rows 1-24 to 0-23 (shift up) */
-  for (i = 0; i < 80 * 24 * 2; i += 2) {
-    putInMemory(0xB800, i, ' '); // Clear as we go
-    putInMemory(0xB800, i + 1, 0x0F);
-  }
-  /* Clear last row (row 24) */
-  for (i = 80 * 24 * 2; i < 80 * 25 * 2; i += 2) {
-    putInMemory(0xB800, i, ' ');
-    putInMemory(0xB800, i + 1, 0x0F);
-  }
-  cursor_pos = 80 * 24; /* Set cursor to start of last row */
-}
-
-void printStringWithColor(char *str, byte color_attr) {
-  while (*str) {
-    /* Check if cursor_pos exceeds screen size (80x25 = 2000 chars) */
-    if (cursor_pos >= 80 * 25) {
-      scrollScreen();
+// Fungsi custom modulo (dari fitur sebelumnya)
+int custom_unsigned_modulo(unsigned int dividend, int divisor) {
+    unsigned int remainder;
+    if (divisor == 0) return 0;
+    if (divisor < 0) divisor = -divisor;
+    remainder = dividend;
+    while (remainder >= (unsigned int)divisor) {
+        remainder -= (unsigned int)divisor;
     }
-    if (*str == '\n') {
-      /* Move to start of next line */
-      cursor_pos = ((cursor_pos / 80) + 1) * 80;
-      str++;
-      continue;
-    }
-    putInMemory(0xB800, cursor_pos * 2, *str);
-    putInMemory(0xB800, cursor_pos * 2 + 1, color_attr);
-    str++;
-    cursor_pos++;
-  }
+    return (int)remainder;
 }
 
-void printPrompt() {
-  char prompt[64];
-  if (grandcompany[0] == '\0') {
-    strcpy(prompt, username);
-    mystrcat(prompt, "> ");
-  } else {
-    strcpy(prompt, username);
-    mystrcat(prompt, "@");
-    mystrcat(prompt, grandcompany);
-    mystrcat(prompt, "> ");
-  }
-  printStringWithColor(prompt, color);
-}
-
-/* Renamed to avoid clashing with stdlib strcat */
-void mystrcat(char *dst, char *src) {
-  while (*dst) dst++;
-  strcpy(dst, src);
-}
 
 void shell() {
   char buf[128];
   char cmd[64];
-  char arg[2][64];
-  int x, y;
-  char result[16];
-  int index;
+  char arg[2][64]; // arg[0] untuk nama GC, arg[1] belum dipakai
+  bool is_known_command;
+  unsigned int tick_value;
+  int random_index;
 
-  printStringWithColor("Welcome to EorzeOS!\n", color);
+  printString("Welcome to EorzeOS!\n");
   while (true) {
-    printPrompt();
+    printString(current_username);
+    if (current_gc_title[0] != '\0') { // Jika ada gelar GC
+        printString(current_gc_title);
+    }
+    printString("> ");
     readString(buf);
+
+    cmd[0] = '\0';
+    arg[0][0] = '\0';
+    arg[1][0] = '\0';
+
     parseCommand(buf, cmd, arg);
 
-    if (strcmp(cmd, "user") == 0) {
-      if (arg[0][0] != '\0') {
-        strcpy(username, arg[0]);
-        printStringWithColor("Username changed to ", color);
-        printStringWithColor(username, color);
-        printStringWithColor("\n", color);
-      } else {
-        strcpy(username, "user");
-        printStringWithColor("Username changed to user\n", color);
+    is_known_command = false;
+
+    if (cmd[0] != '\0') {
+      if (strcmp(cmd, "yo") == true) {
+        printString("gurt\n");
+        is_known_command = true;
+      } else if (strcmp(cmd, "gurt") == true) {
+        printString("yo\n");
+        is_known_command = true;
+      } else if (strcmp(cmd, "user") == true) {
+        if (arg[0][0] != '\0') {
+          int k = 0;
+          while (arg[0][k] != '\0' && k < 32) {
+            current_username[k] = arg[0][k];
+            k++;
+          }
+          current_username[k] = '\0';
+          printString("Username changed to ");
+          printString(current_username);
+          printString("\n");
+        } else {
+          strcpy(current_username, "user");
+          printString("Username changed to user\n");
+        }
+        is_known_command = true;
+      } else if (strcmp(cmd, "yogurt") == true) {
+        tick_value = getBiosTick();
+        random_index = custom_unsigned_modulo(tick_value, num_gurt_responses);
+        printString("gurt> ");
+        printString(gurt_responses[random_index]);
+        is_known_command = true;
+      } else if (strcmp(cmd, "grandcompany") == true) {
+        if (arg[0][0] != '\0') { // Pastikan ada argumen untuk nama GC
+          if (strcmp(arg[0], "maelstrom") == true) {
+            setTextColor(ATTRIBUTE_MAELSTROM);
+            clearScreen(); // Clear dengan warna baru
+            strcpy(current_gc_title, "@Storm");
+            // Pesan konfirmasi tidak diminta, tapi bisa ditambahkan jika mau
+          } else if (strcmp(arg[0], "twinadder") == true) {
+            setTextColor(ATTRIBUTE_TWIN_ADDER);
+            clearScreen();
+            strcpy(current_gc_title, "@Serpent");
+          } else if (strcmp(arg[0], "immortalflames") == true) {
+            setTextColor(ATTRIBUTE_IMMORTAL_FLAMES);
+            clearScreen();
+            strcpy(current_gc_title, "@Flame");
+          } else {
+            printString("Error: Invalid Grand Company specified.\n");
+            printString("Usage: grandcompany [maelstrom|twinadder|immortalflames]\n");
+          }
+        } else {
+          printString("Error: Grand Company name required.\n");
+          printString("Usage: grandcompany [maelstrom|twinadder|immortalflames]\n");
+        }
+        is_known_command = true;
+      } else if (strcmp(cmd, "clear") == true) {
+        setTextColor(ATTRIBUTE_DEFAULT);
+        clearScreen(); // Clear dengan warna default
+        current_gc_title[0] = '\0'; // Hapus gelar GC
+        // Pesan "para Grand Company sedih kamu netral" bisa ditambahkan di sini jika mau.
+        // printString("The Grand Companies are saddened by your neutrality.\n");
+        is_known_command = true;
       }
-    } else if (strcmp(cmd, "grandcompany") == 0) {
-      if (strcmp(arg[0], "maelstrom") == 0) {
-        color = 0x04; /* Red text on black */
-        strcpy(grandcompany, "Storm");
-        clearScreen();
-      } else if (strcmp(arg[0], "twinadder") == 0) {
-        color = 0x0E; /* Yellow text on black */
-        strcpy(grandcompany, "Serpent");
-        clearScreen();
-      } else if (strcmp(arg[0], "immortalflames") == 0) {
-        color = 0x09; /* Light blue text on black */
-        strcpy(grandcompany, "Flame");
-        clearScreen();
-      } else {
-        printStringWithColor("Invalid grand company\n", color);
-      }
-    } else if (strcmp(cmd, "clear") == 0) {
-      color = 0x0F; /* White on black */
-      grandcompany[0] = '\0';
-      clearScreen();
-    } else if (strcmp(cmd, "add") == 0) {
-      atoi(arg[0], &x);
-      atoi(arg[1], &y);
-      itoa(x + y, result);
-      printStringWithColor(result, color);
-      printStringWithColor("\n", color);
-    } else if (strcmp(cmd, "sub") == 0) {
-      atoi(arg[0], &x);
-      atoi(arg[1], &y);
-      itoa(x - y, result);
-      printStringWithColor(result, color);
-      printStringWithColor("\n", color);
-    } else if (strcmp(cmd, "mul") == 0) {
-      atoi(arg[0], &x);
-      atoi(arg[1], &y);
-      itoa(x * y, result);
-      printStringWithColor(result, color);
-      printStringWithColor("\n", color);
-    } else if (strcmp(cmd, "div") == 0) {
-      atoi(arg[0], &x);
-      atoi(arg[1], &y);
-      if (y == 0) {
-        printStringWithColor("Division by zero\n", color);
-      } else {
-        itoa(div(x, y), result);
-        printStringWithColor(result, color);
-        printStringWithColor("\n", color);
-      }
-    } else if (strcmp(cmd, "yogurt") == 0) {
-      index = 0; /* getBiosTick not implemented */
-      printStringWithColor("gurt> ", color);
-      printStringWithColor(phrases[index], color);
-      printStringWithColor("\n", color);
-    } else if (strcmp(cmd, "yo") == 0) {
-      printStringWithColor("gurt\n", color);
-    } else if (strcmp(cmd, "gurt") == 0) {
-      printStringWithColor("yo\n", color);
-    } else {
-      /* Echo feature: print input if not a valid command */
-      printStringWithColor(buf, color);
-      printStringWithColor("\n", color);
+      // TODO: Tambahkan perintah kalkulator jika belum ada
+    }
+
+    if (!is_known_command) {
+      printString(buf);
+      printString("\n");
     }
   }
 }
 
+// Fungsi parseCommand (asumsikan sudah bisa mem-parsing dua argumen)
 void parseCommand(char *buf, char *cmd, char arg[2][64]) {
-  int i, cmd_i, arg_i, arg_idx;
-  clear((byte *)cmd, 64);
-  clear((byte *)arg[0], 64);
-  clear((byte *)arg[1], 64);
-  i = 0;
-  cmd_i = 0;
-  arg_i = 0;
-  arg_idx = 0;
+  int buf_idx = 0;
+  int token_idx = 0;
 
-  while (buf[i] == ' ') i++;
-  while (buf[i] != ' ' && buf[i] != '\0') {
-    cmd[cmd_i++] = buf[i++];
+  cmd[0] = '\0';
+  arg[0][0] = '\0';
+  arg[1][0] = '\0';
+
+  while (buf[buf_idx] == ' ' || buf[buf_idx] == '\t') { buf_idx++; }
+
+  token_idx = 0;
+  while (buf[buf_idx] != '\0' && buf[buf_idx] != ' ' && buf[buf_idx] != '\t' && token_idx < 63) {
+    cmd[token_idx++] = buf[buf_idx++];
   }
-  while (buf[i] == ' ') i++; /* skip space */
-  while (buf[i] != '\0' && arg_idx < 2) {
-    arg[arg_idx][arg_i++] = buf[i++];
-    if (buf[i] == ' ' || buf[i] == '\0') {
-      arg[arg_idx][arg_i] = '\0';
-      arg_i = 0;
-      arg_idx++;
-      while (buf[i] == ' ') i++; /* skip space */
-    }
+  cmd[token_idx] = '\0';
+
+  if (cmd[0] == '\0' && buf[buf_idx] == '\0') return;
+
+  while (buf[buf_idx] == ' ' || buf[buf_idx] == '\t') { buf_idx++; }
+
+  token_idx = 0;
+  while (buf[buf_idx] != '\0' && buf[buf_idx] != ' ' && buf[buf_idx] != '\t' && token_idx < 63) {
+    arg[0][token_idx++] = buf[buf_idx++];
   }
+  arg[0][token_idx] = '\0';
+
+  while (buf[buf_idx] == ' ' || buf[buf_idx] == '\t') { buf_idx++; }
+
+  token_idx = 0;
+  while (buf[buf_idx] != '\0' && buf[buf_idx] != ' ' && buf[buf_idx] != '\t' && token_idx < 63) {
+    arg[1][token_idx++] = buf[buf_idx++];
+  }
+  arg[1][token_idx] = '\0';
 }
