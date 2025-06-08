@@ -180,27 +180,13 @@ Pada suatu hari, anda merasa sangat lelah dari segala macam praktikum yang sudah
 
 ## Laporan
 
-
-_oleh : Balqis Sani Sabillah_
-
+## Soal 1 ## 
+---
+## Soal 2 ## 
+---
 ## Soal 3 ##
-### Deskripsi Soal ###
 
-Seorang main character memerlukan sebuah nama yang semua orang bisa ingat dengan baik. Buatlah sebuah command yang memungkinkan pengguna untuk mengubah nama `user` pada shell yang digunakan:
-
-- `user` <username> = mengubah username menjadi <username>
-- `user` = mengubah username menjadi default `user`
-
-Ilustrasi:  
-user> user Tia   
-Username changed to Tia  
-Tia> user  
-Username changed to user  
-user>  
-
-### Jawaban ###
 ```c
-
 } else if (strcmp(cmd, "user") == true) {
   if (arg[0][0] != '\0') {
     int k = 0;
@@ -220,7 +206,7 @@ user>
 }
 
 ```
-### penjelasan ### 
+### Penjelasan ### 
 
 ```c
 } else if (strcmp(cmd, "user") == true) {
@@ -267,30 +253,8 @@ Jika tidak ada argumen, maka nama dikembalikan ke default "user".
 ```
 Menandai bahwa perintah "user" telah dikenali dan diproses oleh shell. Jika tidak diberi ini, maka perintah akan dianggap tidak valid dan dicetak ulang.
 
-## soal 4 ## 
-### Deskripsi soal ###
+## Soal 4 ## 
 
-Tiga negara besar dari Eorzean Alliance butuh bantuan anda untuk ikut serta dalam "Grand Company" mereka sehingga anda bisa mengubah warna terminal ajaib anda sesuai warna utama dari company mereka:
-
-grandcompany maelstrom = clear terminal, ubah semua teks berikutnya jadi merah
-grandcompany twinadder = clear terminal, ubah semua teks berikutnya jadi kuning
-grandcompany immortalflames = clear terminal, ubah semua teks berikutnya jadi biru
-grandcompany <selain atau kosong> = tunjukkan error message
-clear = clear terminal, ubah semua teks berikutnya kembali jadi awal (para Grand Company sedih kamu netral)
-Selain mengubah seluruh warna terminal, nama anda di dalam terminal akan diberikan tambahan nama judul Grand Company:
-
-- Maelstrom = user@Storm
-- Twin Adder = user@Serpent
-- Immortal Flames = user@Flame
-- clear = menghapus nama grand company
-
-Ilustrasi:  
-gurt> grandcompany maelstrom   
--- terminal clear menjadi warna merah --  
-gurt@Storm> clear  
--- terminal clear menjadi warna putih --
-
-### jawaban ###
 ``` c
 } else if (strcmp(cmd, "grandcompany") == true) {
   if (arg[0][0] != '\0') { // Pastikan ada argumen untuk nama GC
@@ -317,7 +281,7 @@ gurt@Storm> clear
   is_known_command = true;
 }
 ```
-### penjelasan ###
+### Penjelasan ###
 ```c
 } else if (strcmp(cmd, "grandcompany") == true) {
 ```
@@ -370,7 +334,85 @@ Jika tidak ada argumen sama sekali (hanya ketik grandcompany), tampilkan error d
 ```
 Menandai bahwa perintah "grandcompany" dikenali dan sudah ditangani.
 
+---
+## Soal 5 ## 
+### Implementasi Kalkulator Sederhana
 
+Fitur kalkulator memungkinkan pengguna untuk melakukan operasi aritmatika dasar (`add`, `sub`, `mul`, `div`) dari baris perintah.
+
+#### Alur Kerja Perintah Kalkulator:
+
+1.  **Input Pengguna:** Pengguna mengetikkan perintah, misalnya `mul 3 -2`, di dalam *loop* utama fungsi `shell()` di `shell.c`.
+2.  **Parsing Perintah:** Fungsi `parseCommand(buf, cmd, arg)` dipanggil untuk memecah input pengguna menjadi tiga bagian:
+    * Perintah utama (`cmd`): misal, `"mul"`.
+    * Argumen pertama (`arg[0]`): misal, `"3"`.
+    * Argumen kedua (`arg[1]`): misal, `"-2"`.
+3.  **Identifikasi Perintah:** Di dalam `shell()`, serangkaian `if-else if` digunakan untuk mencocokkan `cmd` dengan perintah yang dikenali.
+    ```c
+    // shell.c
+    if (strcmp(cmd, "add") == true || strcmp(cmd, "sub") == true || ... ) {
+        // ... logika kalkulator
+    }
+    ```
+4.  **Konversi Argumen:** Argumen yang masih berupa *string* (`"3"` dan `"-2"`) diubah menjadi tipe data *integer*. Ini dilakukan dengan memanggil fungsi `atoi` dari `std_lib.c`. Fungsi `atoi` ini sudah dirancang untuk dapat menangani angka negatif dengan memeriksa karakter `'-'` di awal *string*.
+    ```c
+    // shell.c
+    atoi(arg[0], &a); // Mengubah argumen pertama menjadi integer a
+    atoi(arg[1], &b); // Mengubah argumen kedua menjadi integer b
+    ```
+5.  **Operasi Aritmatika:**
+    * **Penjumlahan (`add`) & Pengurangan (`sub`):** Dilakukan langsung menggunakan operator `+` dan `-` dari bahasa C.
+    * **Perkalian (`mul`):** Diimplementasikan menggunakan logika penjumlahan berulang di dalam `shell.c`. Fungsi ini juga menangani tanda negatif dengan menentukan apakah hasil akhir harus negatif atau positif.
+    * **Pembagian (`div`):** Memanggil fungsi `div(a, b)` dari `std_lib.c`. Fungsi ini diimplementasikan menggunakan pengurangan berulang dan telah dirancang untuk menangani angka negatif dengan benar serta mencegah pembagian dengan nol.
+6.  **Konversi Hasil:** Hasil perhitungan yang berupa *integer* diubah kembali menjadi *string* agar dapat dicetak ke layar. Ini dilakukan menggunakan fungsi `itoa` dari `std_lib.c`, yang juga mampu menangani angka negatif.
+    ```c
+    // shell.c
+    itoa(result, result_str); // Mengubah hasil integer menjadi string
+    ```
+7.  **Tampilkan Hasil:** *String* hasil akhir dicetak ke layar menggunakan `printString(result_str)`.
+
+---
+
+## Soal 6 ## 
+### Implementasi Perintah `yogurt`
+
+Fitur `yogurt` dirancang untuk memberikan salah satu dari tiga respons yang telah ditentukan secara acak setiap kali perintah dipanggil.
+
+#### Alur Kerja Perintah `yogurt`:
+
+1.  **Penyimpanan Respons:** Sebuah *array of strings* bernama `gurt_responses` didefinisikan secara global di `shell.c` untuk menyimpan semua kemungkinan respons.
+    ```c
+    // shell.c
+    char* gurt_responses[] = {
+        "yo\n",
+        "ts unami gng </3\n",
+        "sygau\n"
+    };
+    int num_gurt_responses = 3;
+    ```
+2.  **Identifikasi Perintah:** Sama seperti kalkulator, *loop* utama di `shell()` memeriksa apakah perintah yang dimasukkan adalah `"yogurt"`.
+3.  **Mendapatkan Nilai "Acak":**
+    * Untuk menghasilkan keacakan, sistem memanggil fungsi `getBiosTick()` yang dideklarasikan di `kernel.h` dan diimplementasikan dalam *assembly* di `kernel.asm`.
+    * Fungsi ini menggunakan `int 0x1A` untuk membaca *BIOS tick counter*, yaitu sebuah penghitung internal yang terus bertambah sejak komputer dinyalakan. Nilai ini selalu berubah, sehingga dapat digunakan sebagai sumber nilai pseudo-acak yang sederhana.
+    ```c
+    // shell.c
+    tick_value = getBiosTick();
+    ```
+4.  **Memilih Respons:**
+    * Untuk memastikan indeks yang dihasilkan selalu berada dalam rentang yang valid untuk *array* `gurt_responses` (yaitu 0, 1, atau 2), digunakan operasi modulo.
+    * Fungsi `custom_unsigned_modulo(tick_value, num_gurt_responses)` dipanggil. Fungsi ini mengambil nilai *tick* dan membaginya dengan jumlah total respons (3). Sisanya (`0`, `1`, atau `2`) digunakan sebagai indeks acak.
+    ```c
+    // shell.c
+    random_index = custom_unsigned_modulo(tick_value, num_gurt_responses);
+    ```
+5.  **Menampilkan Respons:** Respons yang sesuai dengan indeks acak yang didapat dari *array* `gurt_responses` kemudian dicetak ke layar menggunakan `printString`.
+    ```c
+    // shell.c
+    printString("gurt> ");
+    printString(gurt_responses[random_index]);
+    ```
+
+---
 
 
 
