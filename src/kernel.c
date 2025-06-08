@@ -21,11 +21,6 @@ int main() {
 // Fungsi baru untuk mengatur atribut teks global
 void setTextColor(byte attribute) {
   current_text_attribute = attribute;
-  // Catatan: Fungsi ini hanya mengubah variabel global.
-  // Perubahan visual akan terjadi saat clearScreen atau printString berikutnya.
-  // Jika ingin langsung mengubah warna default BIOS (untuk output non-OS):
-  // interrupt(0x10, 0x0B00, 0x0000 | attribute, 0x0000, 0x0000); // Set palette color (BH=0, BL=color)
-  // Namun, untuk OS ini, kita akan kontrol per karakter/layar.
 }
 
 // Modifikasi fungsi untuk mencetak string dengan warna saat ini
