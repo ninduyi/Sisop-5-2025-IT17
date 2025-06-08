@@ -111,8 +111,57 @@ void shell() {
         // Pesan "para Grand Company sedih kamu netral" bisa ditambahkan di sini jika mau.
         // printString("The Grand Companies are saddened by your neutrality.\n");
         is_known_command = true;
+        // TODO: Tambahkan perintah kalkulator jika belum ada
+      } 
+      else if (strcmp(cmd, "add") == true || strcmp(cmd, "sub") == true || strcmp(cmd, "mul") == true || strcmp(cmd, "div") == true || strcmp(cmd, "mod") == true) {
+        if (arg[0][0] != '\0' && arg[1][0] != '\0') {
+          int a, b, result;
+          int i;
+          int negative;
+          char result_str[64];
+          atoi(arg[0], &a);
+          atoi(arg[1], &b);
+
+          if (strcmp(cmd, "add") == true) {
+            result = a + b;
+          } else if (strcmp(cmd, "sub") == true) {
+            result = a - b;
+          } else if (strcmp(cmd, "mul") == true) {
+            result = 0;
+            negative = 0;
+            if ((a < 0 && b > 0) || (a > 0 && b < 0)) negative = true;
+            if (a < 0) a = -a;
+            if (b < 0) b = -b;
+            for (i = 0; i < b; i++) {
+              result += a;
+            }
+            if (negative) result = -result;
+          } else if (strcmp(cmd, "div") == true) {
+            if (b == 0) {
+              printString("Error: Division by zero\n");
+              is_known_command = true;
+              continue;
+            }
+            result = div(a, b); // Gunakan fungsi div milikmu
+          } else if (strcmp(cmd, "mod") == true) {
+            if (b == 0) {
+              printString("Error: Modulus by zero\n");
+              is_known_command = true;
+              continue;
+            }
+            result = mod(a, b); // Gunakan fungsi mod milikmu
+          }
+
+          itoa(result, result_str);
+          printString(result_str);
+          printString("\n");
+        } else {
+          printString("Error: Two numbers required.\n");
+          printString("Usage: add/sub/mul/div/mod <num1> <num2>\n");
+        }
+        is_known_command = true;
       }
-      // TODO: Tambahkan perintah kalkulator jika belum ada
+
     }
 
     if (!is_known_command) {
