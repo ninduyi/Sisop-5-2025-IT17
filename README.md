@@ -180,4 +180,200 @@ Pada suatu hari, anda merasa sangat lelah dari segala macam praktikum yang sudah
 
 ## Laporan
 
-> Isi sesuai pengerjaan.
+
+_oleh : Balqis Sani Sabillah_
+
+## Soal 3 ##
+### Deskripsi Soal ###
+
+Seorang main character memerlukan sebuah nama yang semua orang bisa ingat dengan baik. Buatlah sebuah command yang memungkinkan pengguna untuk mengubah nama `user` pada shell yang digunakan:
+
+- `user` <username> = mengubah username menjadi <username>
+- `user` = mengubah username menjadi default `user`
+
+Ilustrasi:  
+user> user Tia   
+Username changed to Tia  
+Tia> user  
+Username changed to user  
+user>  
+
+### Jawaban ###
+```c
+
+} else if (strcmp(cmd, "user") == true) {
+  if (arg[0][0] != '\0') {
+    int k = 0;
+    while (arg[0][k] != '\0' && k < 32) {
+      current_username[k] = arg[0][k];
+      k++;
+    }
+    current_username[k] = '\0';
+    printString("Username changed to ");
+    printString(current_username);
+    printString("\n");
+  } else {
+    strcpy(current_username, "user");
+    printString("Username changed to user\n");
+  }
+  is_known_command = true;
+}
+
+```
+### penjelasan ### 
+
+```c
+} else if (strcmp(cmd, "user") == true) {
+```
+Mengecek apakah perintah `(cmd)` yang diketik user adalah `"user"` 
+— artinya ingin mengubah username. 
+
+```c 
+  if (arg[0][0] != '\0') {
+```
+Mengecek apakah ada argumen pertama `(arg[0])` yang diberikan — contohnya: user Tia.  
+Jika ada, maka lanjut untuk mengganti `current_username` dengan `string` tersebut.
+
+``` c
+    int k = 0;
+    while (arg[0][k] != '\0' && k < 32) {
+      current_username[k] = arg[0][k];
+      k++;
+    }
+    current_username[k] = '\0';
+```
+Menyalin karakter demi karakter dari `arg[0]` ke dalam variabel global `current_username`, dengan maksimal 32 karakter.
+Ini semacam `strncpy`, tapi ditulis manual.
+Diakhiri dengan `\0` untuk menandai akhir `string` (wajib dalam C).
+
+```c 
+    printString("Username changed to ");
+    printString(current_username);
+    printString("\n");
+```
+Menampilkan pesan bahwa username telah diganti, beserta nama barunya.
+
+``` c
+  } else {
+    strcpy(current_username, "user");
+    printString("Username changed to user\n");
+  }
+```
+Jika tidak ada argumen, maka nama dikembalikan ke default "user".
+
+``` c
+  is_known_command = true;
+}
+```
+Menandai bahwa perintah "user" telah dikenali dan diproses oleh shell. Jika tidak diberi ini, maka perintah akan dianggap tidak valid dan dicetak ulang.
+
+## soal 4 ## 
+### Deskripsi soal ###
+
+Tiga negara besar dari Eorzean Alliance butuh bantuan anda untuk ikut serta dalam "Grand Company" mereka sehingga anda bisa mengubah warna terminal ajaib anda sesuai warna utama dari company mereka:
+
+grandcompany maelstrom = clear terminal, ubah semua teks berikutnya jadi merah
+grandcompany twinadder = clear terminal, ubah semua teks berikutnya jadi kuning
+grandcompany immortalflames = clear terminal, ubah semua teks berikutnya jadi biru
+grandcompany <selain atau kosong> = tunjukkan error message
+clear = clear terminal, ubah semua teks berikutnya kembali jadi awal (para Grand Company sedih kamu netral)
+Selain mengubah seluruh warna terminal, nama anda di dalam terminal akan diberikan tambahan nama judul Grand Company:
+
+- Maelstrom = user@Storm
+- Twin Adder = user@Serpent
+- Immortal Flames = user@Flame
+- clear = menghapus nama grand company
+
+Ilustrasi:  
+gurt> grandcompany maelstrom   
+-- terminal clear menjadi warna merah --  
+gurt@Storm> clear  
+-- terminal clear menjadi warna putih --
+
+### jawaban ###
+``` c
+} else if (strcmp(cmd, "grandcompany") == true) {
+  if (arg[0][0] != '\0') { // Pastikan ada argumen untuk nama GC
+    if (strcmp(arg[0], "maelstrom") == true) {
+      setTextColor(ATTRIBUTE_MAELSTROM);
+      clearScreen(); // Clear dengan warna baru
+      strcpy(current_gc_title, "@Storm");
+    } else if (strcmp(arg[0], "twinadder") == true) {
+      setTextColor(ATTRIBUTE_TWIN_ADDER);
+      clearScreen();
+      strcpy(current_gc_title, "@Serpent");
+    } else if (strcmp(arg[0], "immortalflames") == true) {
+      setTextColor(ATTRIBUTE_IMMORTAL_FLAMES);
+      clearScreen();
+      strcpy(current_gc_title, "@Flame");
+    } else {
+      printString("Error: Invalid Grand Company specified.\n");
+      printString("Usage: grandcompany [maelstrom|twinadder|immortalflames]\n");
+    }
+  } else {
+    printString("Error: Grand Company name required.\n");
+    printString("Usage: grandcompany [maelstrom|twinadder|immortalflames]\n");
+  }
+  is_known_command = true;
+}
+```
+### penjelasan ###
+```c
+} else if (strcmp(cmd, "grandcompany") == true) {
+```
+Mengecek apakah perintah `(cmd)` yang diketik oleh user adalah `"grandcompany"` — artinya `user` ingin bergabung dengan salah satu dari tiga Grand Company.
+```c
+  if (arg[0][0] != '\0') { 
+```
+Mengecek apakah `user` memberikan nama Grand Company sebagai argumen pertama `(arg[0])`
+```c
+    if (strcmp(arg[0], "maelstrom") == true) {
+```
+Ubah warna teks terminal menjadi warna khas Maelstrom (merah).
+```c
+      strcpy(current_gc_title, "@Storm");
+```
+Tambahkan `@Storm` di belakang username pada prompt sebagai tanda bahwa user telah bergabung dengan Maelstrom.
+```c
+    } else if (strcmp(arg[0], "twinadder") == true) {
+      setTextColor(ATTRIBUTE_TWIN_ADDER);
+      clearScreen();
+      strcpy(current_gc_title, "@Serpent");
+```
+ Jika user memilih Twin Adder:
+- Warna terminal diubah ke kuning.  
+- Prompt akan menjadi `user@Serpent`.
+```c
+    } else if (strcmp(arg[0], "immortalflames") == true) {
+      setTextColor(ATTRIBUTE_IMMORTAL_FLAMES);
+      clearScreen();
+      strcpy(current_gc_title, "@Flame");
+```
+ Jika user memilih Immortal Flames:
+- Warna terminal diubah ke biru.
+- Prompt akan menjadi `user@Flame`.
+```c
+    } else {
+      printString("Error: Invalid Grand Company specified.\n");
+      printString("Usage: grandcompany [maelstrom|twinadder|immortalflames]\n");
+```
+Jika nama GC salah (misalnya grandcompany abc), maka tampilkan pesan error.
+```c
+  } else {
+    printString("Error: Grand Company name required.\n");
+    printString("Usage: grandcompany [maelstrom|twinadder|immortalflames]\n");
+```
+Jika tidak ada argumen sama sekali (hanya ketik grandcompany), tampilkan error dan cara pakainya.
+```c
+  is_known_command = true;
+}
+```
+Menandai bahwa perintah "grandcompany" dikenali dan sudah ditangani.
+
+
+
+
+
+
+
+
