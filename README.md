@@ -457,6 +457,124 @@ Fitur `yogurt` dirancang untuk memberikan salah satu dari tiga respons yang tela
 
 ---
 
+## Soal 7 ## 
+
+### Implementasi Makefile
+
+Makefile digunakan untuk mengotomatiskan proses kompilasi dan pembuatan image disk untuk EorzeOS.
+```makefile 
+# makefile
+CFLAGS = -ansi -Iinclude
+
+prepare:
+	dd if=/dev/zero of=bin/floppy.img bs=512 count=2880
+
+bootloader:
+	nasm -f bin src/bootloader.asm -o bin/bootloader.bin
+	dd if=bin/bootloader.bin of=bin/floppy.img bs=512 count=1 conv=notrunc
+
+stdlib:
+	bcc $(CFLAGS) -c src/std_lib.c -o bin/std_lib.o
+
+shell:
+	bcc $(CFLAGS) -c src/shell.c -o bin/shell.o
+
+kernel:
+	nasm -f as86 src/kernel.asm -o bin/kernel-asm.o
+	bcc $(CFLAGS) -c src/kernel.c -o bin/kernel.o
+
+link:
+	ld86 -o bin/kernel.bin -d bin/kernel.o bin/kernel-asm.o bin/std_lib.o bin/shell.o
+	dd if=bin/kernel.bin of=bin/floppy.img bs=512 seek=1 conv=notrunc
+
+build: prepare bootloader stdlib shell kernel link
+
+clean:
+	rm -f bin/*.o bin/*.bin
+
+run: build
+	bochs -f bochsrc.txt
+
+all: clean build
+```
+
+Penjelasan:
+```makefile
+CFLAGS = -ansi -Iinclude
+```
+Mendefinisikan variabel `CFLAGS` untuk opsi kompilasi:
+- `-ansi`: Memastikan kode C sesuai standar ANSI.
+- `-Iinclude`: Mengatur direktori `include` untuk file header seperti `shell.h` dan `kernel.h`.
+
+```makefile
+prepare:
+	dd if=/dev/zero of=bin/floppy.img bs=512 count=2880
+  ```
+Membuat file image disk kosong (`floppy.img`) dengan ukuran 1.44MB (2880 sektor, masing-masing 512 byte) menggunakan `dd`. Input diambil dari `/dev/zero` untuk mengisi file dengan nol.
+
+```makefile
+bootloader:
+	nasm -f bin src/bootloader.asm -o bin/bootloader.bin
+	dd if=bin/bootloader.bin of=bin/floppy.img bs=512 count=1 conv=notrunc
+  ```
+- Mengompilasi `bootloader.asm` menjadi file biner `bootloader.bin` menggunakan NASM dengan format `bin`(biner langsung).
+
+- Menulis `bootloader.bin` ke sektor pertama image disk (`floppy.img`) tanpa memotong isi file (`conv=notrunc`).
+
+```makefile
+stdlib:
+	bcc $(CFLAGS) -c src/std_lib.c -o bin/std_lib.o
+  ```
+Mengompilasi `std_lib.c` menjadi file objek `std_lib.o` menggunakan kompiler BCC dengan opsi CFLAGS. File ini berisi fungsi standar seperti `div`, `mod`, dan `strcmp`.
+
+```makefile
+shell:
+	bcc $(CFLAGS) -c src/shell.c -o bin/shell.o
+  ```
+Mengompilasi `shell.c` menjadi file objek `shell.o` menggunakan BCC. File ini mengimplementasikan shell EorzeOS, termasuk fitur "The Echo" dan perintah `yo`/`gurt`.
+
+```makefile
+kernel:
+	nasm -f as86 src/kernel.asm -o bin/kernel-asm.o
+	bcc $(CFLAGS) -c src/kernel.c -o bin/kernel.o
+  ```
+
+- Mengompilasi `kernel.asm` menjadi file objek `kernel-asm.o` menggunakan NASM dengan format `as86`(kompatibel dengan linker `ld86`).
+
+- Mengompilasi `kernel.c` menjadi file objek `kernel.o` menggunakan BCC. File ini berisi fungsi inti seperti `printString` dan `clearScreen`.
+
+```makefile
+link:
+	ld86 -o bin/kernel.bin -d bin/kernel.o bin/kernel-asm.o bin/std_lib.o bin/shell.o
+	dd if=bin/kernel.bin of=bin/floppy.img bs=512 seek=1 conv=notrunc
+```
+- Menggabungkan semua file objek (`kernel.o`, `kernel-asm.o`, `std_lib.o`, `shell.o`) menjadi file biner `kernel.bin` menggunakan linker `ld86` dengan opsi `-d` untuk debugging.
+
+- Menulis `kernel.bin` ke image disk mulai dari sektor kedua (`seek=1`) tanpa memotong isi file.
+
+```makefile
+build: prepare bootloader stdlib shell kernel link
+```
+Menjalankan semua langkah kompilasi secara berurutan: membuat image disk, mengompilasi bootloader, library, shell, kernel, dan menggabungkannya.
+
+```makefile
+clean:
+	rm -f bin/*.o bin/*.bin
+```
+Menghapus semua file objek (`.o`) dan biner (`.bin`) di direktori `bin` untuk membersihkan hasil kompilasi sebelumnya.
+
+```makefile
+run: build
+	bochs -f bochsrc.txt
+```
+Menjalankan target `build` untuk mengompilasi sistem, lalu menjalankan image disk di emulator Bochs menggunakan file konfigurasi `bochsrc.txt.`
+
+```makefile
+all: clean build
+```
+Membersihkan file lama dengan `clean`, lalu menjalankan `build` untuk mengompilasi ulang seluruh sistem.
+
+
 
 
 
