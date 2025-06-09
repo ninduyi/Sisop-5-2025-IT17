@@ -181,9 +181,52 @@ Pada suatu hari, anda merasa sangat lelah dari segala macam praktikum yang sudah
 ## Laporan
 
 ## Soal 1 ## 
----
+
+```c
+if (!is_known_command) {
+    printString(buf);
+    printString("\n");
+}
+```
+Mengimplementasikan fitur "The Echo". Jika perintah tidak dikenali (`is_known_command == false`), input pengguna (disimpan di `buf`) dicetak kembali diikuti oleh newline.
+
 ## Soal 2 ## 
----
+
+```c
+// shell.c
+if (cmd[0] != '\0') {
+    if (strcmp(cmd, "yo") == true) {
+        printString("gurt\n");
+        is_known_command = true;
+    } else if (strcmp(cmd, "gurt") == true) {
+        printString("yo\n");
+        is_known_command = true;
+    }
+}
+if (!is_known_command) {
+    printString(buf);
+    printString("\n");
+}
+```
+### Penjelasan ###
+```c
+if (cmd[0] != '\0') {
+```
+Memeriksa apakah ada perintah yang dimasukkan (bukan string kosong).
+```c
+if (strcmp(cmd, "yo") == true) {
+    printString("gurt\n");
+    is_known_command = true;
+} else if (strcmp(cmd, "gurt") == true) {
+    printString("yo\n");
+    is_known_command = true;
+}
+```
+- Mengecek apakah perintah yang dimasukkan adalah `yo` atau `gurt` menggunakan `strcmp`.
+- Jika perintah adalah `yo`, mencetak "gurt".
+- Jika perintah adalah `gurt`, mencetak "yo".
+- Mengatur `is_known_command = true` untuk menandakan bahwa perintaha valid telah diproses.
+
 ## Soal 3 ##
 
 ```c
